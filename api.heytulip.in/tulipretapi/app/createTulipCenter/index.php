@@ -17,6 +17,7 @@
 	$sql = "INSERT INTO tulip_center (name, email, license_id)	VALUES ('".$name."', '".$email."', ".$license_id.")";
 
 	if ($conn->query($sql) === TRUE) {
+		
 	  echo '{"status":"created","error":null}';
 	} else {
 	  echo '{"status":"failed","error":"'.$conn->error.'"}';
