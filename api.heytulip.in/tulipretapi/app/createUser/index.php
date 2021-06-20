@@ -8,16 +8,15 @@
 	$max_assigned_ticket = $_REQUEST['max_assigned_ticket'];
 	$tc_id = $_REQUEST['tc_id'];
 	$user_id = $_REQUEST['user_id'];
-	$user_password = $_REQUEST['user_password'];
+	$user_pass = md5($_REQUEST['user_pass']);
 
-	if(is_null($user_password)){
-		echo '{"status":"failed","error":"Password is null"}';
-        exit();
-	}
     if(is_null($max_assigned_ticket)){
         $max_assigned_ticket = 0;
     }else if(is_null($user_id)){
         echo '{"status":"failed","error":"User ID is null"}';
+        exit();
+    }else if(is_null($user_pass)){
+        echo '{"status":"failed","error":"Password is null"}';
         exit();
     }
 	// Create connection
@@ -30,9 +29,12 @@
 	$sql = "INSERT INTO users (name, role, created_date, max_assigned_ticket,tc_id,user_id)	VALUES ('".$name."','".$role."',now(),'".$max_assigned_ticket."','".$tc_id."','".$user_id."')";
 
 	if ($conn->query($sql) === TRUE) {
-	  //$sql1 = ""; Need to add insert query for table "login" with aes encrypted password 
-		
-	  echo '{"status":"created","error":null}';
+	   $sql2 = "INSERT INTO login (user_id,user_pass) VALUES ('".$user_id."','".$user_pass."')";
+	    if ($conn->query($sql2) === TRUE) {   
+	        echo '{"status":"created","error":null}';
+	    }else {
+	        echo '{"status":"failed","error":"'.$conn->error.'"}';
+	   }
 	} else {
 	  echo '{"status":"failed","error":"'.$conn->error.'"}';
 	}
