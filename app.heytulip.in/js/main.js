@@ -3,7 +3,7 @@ function doLogin(){
 	var password = document.getElementById("password").value;
 	if(userId && password){
 
-	document.getElementById("loginButton").innerHTML = '<br /><div class="spinner-border text-dark" style=" width: 66px; height: 66px; " role="status"><span class="visually-hidden">Loading...</span></div><br />';
+	document.getElementById("loginButton").innerHTML = '<br /><span  id="spinner" ><div class="spinner-border text-dark" style=" width: 66px; height: 66px; " role="status"><span class="visually-hidden">Loading...</span></div></span><br />';
 		var settings = {
 		  "url": "http://api.heytulip.in/tuliprestapi/app/login/",
 		  "method": "POST",
@@ -19,16 +19,30 @@ function doLogin(){
 
 		try{
 			$.ajax(settings).done(function (response) {
-		  	loadingAnim.style.display = "none";
+				// alert(JSON.parse(response));
+				alert(response.result);
 			  	if(response != 0){
-			  	  	var encrypted = CryptoJS.AES.encrypt(response, emailid);
+					// var userData = JSON.parse(response);
+					userData = response;
+					response = JSON.stringify(response);
+					alert(userData);
+			  	  	var encrypted = CryptoJS.AES.encrypt(response, userId);
 			  	  	encrypted = encodeURIComponent(encrypted);
 			  	  	// alert(encrypted);
-			  	  	if(emailid){
-			  	  	  	window.open("premiumsupport/?emailid="+emailid+"&response="+encrypted,"_self");
+			  	  	if(userData.userRole == 'Administrator'){
+			  	  	  	window.open("administrator/?userId="+userId+"&data="+encrypted,"_self");
+			  	  	}else if(userData.userRole == 'Supervisor'){
+			  	  		window.open("supervisor/?userId="+userId+"&data="+encrypted,"_self");
+			  	  	}else if(userData.userRole == 'Agent'){
+			  	  		window.open("agent/?userId="+userId+"&data="+encrypted,"_self");
+			  	  	}else{
+			  	  		if(userData.reason == 'wrong_password'){
+			  	  			alert('Please check you ID and Password');
+			  	  			document.getElementById('spinner').innerHTML = '<button onclick="doLogin()" class="fadeIn">Log In</button>';
+			  	  		}
 			  	  	}
 			  	}else{
-	 				alert("failed");
+	 				alert("Error");
 			  	}
 			});
 		}catch(error){

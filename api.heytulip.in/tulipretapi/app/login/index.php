@@ -16,30 +16,49 @@
 	$sessionId = generateSessionId();
 	
 	$userId = $_REQUEST['userId'];
-	$customerPassword = md5($_REQUEST['password']);
+	$password = md5($_REQUEST['password']);
 	
 	$conn = new mysqli($tulip_servername, $tulip_username, $tulip_password, $tulip_dbname);
 	if ($conn->connect_error) {
 	  die("Connection failed: " . $conn->connect_error);
 	}
 
-	$sql = "SELECT login_detail.customer_password, login_detail.tc_id, info.customer_id, info.customer_name, info.contact_email, info.contact_number FROM (SELECT customer_password, tc_id FROM tulip_customer_login where contact_email = '".$emailId."' ) as login_detail LEFT JOIN ( SELECT customer_id, customer_name, tc_id, contact_email, contact_number FROM tulip_customer_info WHERE contact_email = '".$emailId."' ) as info ON (login_detail.tc_id = info.tc_id)";
+	//checking user current status, killing existing sessions
+	$sql0 = "SELECT count(1) as log_num FROM user_session_history where logout_time is null";
+	$countResult = $conn->query($sql0);
+	if($countResult->num_rows > 0){
+		while ($row = $countResult->fetch_assoc()) {
+			if($row["log_num"] > 0){
+				$logoutUserQuery = "UPDATE user_session_history SET logout_time = now(), logout_reason = 'USER_FORCED_LOGOUT' WHERE logout_time is null and user_id = '".$userId."'";
+				$runquery = $conn->query($logoutUserQuery);
+			}
+		}
+	}
+
+	//logging user in
+	$sql = "SELECT user_pass,tc_id FROM login WHERE user_id = '".$userId."'";
 	$result = $conn->query($sql);
 	if ($result->num_rows > 0) {
-	    
-    	$insertSessionId = "UPDATE tulip_customer_login SET latest_session_id = '".$sessionId."' , session_start_time = '".$sessionStartDatetime."' WHERE contact_email = '".$emailId."'";
-        $conn->query($insertSessionId);
-  
 		while($row = $result->fetch_assoc()) {
-			if($row["customer_password"] == $customerPassword){
-			    $customerData = '{"tc_id":"'.$row["tc_id"].'","customer_id":"'.$row["customer_id"].'","customer_name":"'.$row["customer_name"].'","contact_email":"'.$row["contact_email"].'","contact_number":"'.$row["contact_number"].'","sessionId":"'.$sessionId.'"}';
-			    echo $customerData;
+			if($row["user_pass"] == $password){
+	    		//adding session
+		    	$insertSessionId = "INSERT INTO user_session_history (tc_id, session_id,user_id,login_time) VALUES ('".$row["tc_id"]."','".$sessionId."','".$userId."',now())";
+		        $conn->query($insertSessionId);
+				//get user name and user role
+				$getUserRoleQuery = "SELECT name, role FROM users WHERE user_id = '".$userId."'";
+				$userRole = $conn->query($getUserRoleQuery);
+				if($userRole->num_rows >0){
+					while($row2 = $userRole->fetch_assoc()){
+						$userData = '{"result":"success","userId":"'.$userId.'","sessionId":"'.$sessionId.'","userRole":"'.$row2["role"].'","userName":"'.$row2["name"].'","tcId":"'.$row["tc_id"].'"}';
+						echo $userData;
+					}
+			    }
 			}else{
-			    echo "0";
+			    echo '{"result":"failed","reason":"wrong_password"}';
 			}
 		}
 	} else {
-		echo "0";
+		echo '{"result":"failed","reason":"no_user_found"}';
 	}
 	$conn->close();
 

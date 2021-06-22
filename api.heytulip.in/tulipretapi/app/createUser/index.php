@@ -29,7 +29,7 @@
 	$sql = "INSERT INTO users (name, role, created_date, max_assigned_ticket,tc_id,user_id)	VALUES ('".$name."','".$role."',now(),'".$max_assigned_ticket."','".$tc_id."','".$user_id."')";
 
 	if ($conn->query($sql) === TRUE) {
-	   $sql2 = "INSERT INTO login (user_id,user_pass) VALUES ('".$user_id."','".$user_pass."')";
+	   $sql2 = "INSERT INTO login (user_id,user_pass,tc_id) VALUES ('".$user_id."','".$user_pass."','".$tc_id."')";
 	    if ($conn->query($sql2) === TRUE) {   
 	        echo '{"status":"created","error":null}';
 	    }else {
