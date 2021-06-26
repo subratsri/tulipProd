@@ -11,18 +11,7 @@ var userDataGlobal = '';
 				});
 			})
 		}
-		function setProcessTable(){
-			$(function(){
-				$("#process-table").dataTable({
-					"pageLength":10,
-					"bPaginate": true,
-				    "bLengthChange": false,
-				    "bFilter": true,
-				    "bInfo": true,
-				    "bAutoWidth": true
-				});
-			})
-		}
+
 		function getCustInfo(){
 			var urlParams = new URLSearchParams(window.location.search);
 			var userId = urlParams.get('userId');
@@ -43,42 +32,84 @@ var userDataGlobal = '';
 				window.open("../");
 			}
 		}
+		function updateData(campaignId, processId){
+			var setupUrl = document.getElementById('setup'+processId).value;
+			var propagateCustomer = document.getElementById('flexCheckProcess'+processId).checked;
+			if(propagateCustomer){propagateCustomer=1;}else{propagateCustomer=0;}
+			var history = document.getElementById('preview'+campaignId).value;
+			var customer = document.getElementById('customer'+campaignId).value;
+			var dispose = document.getElementById('dispose'+campaignId).value;
 
+			var requestOptions = {
+			  method: 'GET',
+			  redirect: 'follow'
+			};
+
+			fetch("http://api.heytulip.in/tuliprestapi/app/updateProcessAndCampaign/?campaignId="+campaignId+"&processId="+processId+"&propagateCustomer="+propagateCustomer+"&setupUrl="+setupUrl+"&history="+history+"&dispose="+dispose+"&customer="+customer, requestOptions)
+			  .then(response => response.text())
+			  .then(result => {
+			  		document.getElementById('alert_box').innerHTML = '<div class="alert alert-success  alert-dismissible fade show" role="alert">Data updated <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button></div>';
+			  })
+			  .catch(error => console.log('error', error));
+		}
+		function getCampaigns(process_id){
+			var processId = parseInt(process_id);
+			var requestOptions = {
+			  method: 'GET',
+			  redirect: 'follow'
+			};
+			var data_name = 'campaign_data'+ process_id;
+			fetch("http://api.heytulip.in/tuliprestapi/app/getCampaign/?process_id="+processId, requestOptions)
+			  .then(response => response.json())
+			  .then(result => {
+			  	if(result.status != 'no_data'){
+			  	 	console.log(result.data);
+			  	 	var campaignData = '<div class="accordion accordion-flush" id="accordionMain">';
+			  	 	for(var i=0;i<result.data.length;i++){
+			  	 		campaignData = campaignData+'<div class="accordion-item"> <h2 class="accordion-header" id="heading'+i+'"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCampaign'+i+'" aria-expanded="true" aria-controls="collapseCampaign'+i+'"><br /><i>'+result.data[i].name+'</i> </button> </h2> <div id="collapseCampaign'+i+'" class="accordion-collapse collapse" aria-labelledby="heading"'+i+' data-bs-parent="#accordionMain"><br /><div class="accordion-body"><b>Campaign ID</b>  '+result.data[i].id+' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Type</b> <i>'+result.data[i].type+'</i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<b>Theme ID </b>'+result.data[i].theme_id+'<br /><br />History URL <input type="text" id="preview'+result.data[i].id+'" value="'+result.data[i].preview_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer URL <input type="text" id="customer'+result.data[i].id+'"  value="'+result.data[i].customer_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Dispose URL <input type="text" id="dispose'+result.data[i].id+'" value="'+result.data[i].dispose_url+'"/> <br /><br /><button type="button" class="btn btn-primary" onclick="updateData('+result.data[i].id+','+processId+')">Update</button></div> </div> </div>';
+			  	 	}
+			  	 	campaignData = campaignData + ' </div>';
+
+			  	  	document.getElementById(data_name).innerHTML = campaignData;
+			  	}else{
+			  		document.getElementById(data_name).innerHTML = 'No Campaign Created';
+			  	}
+			  })
+			  .catch(error => console.log('error', error));
+
+		}
+
+		function createCampaign(){
+			alert('Unimplemented');
+
+		}
 		//Show all data on UI 
 		function showProcessData(data){
-			// document.getElementById('content').innerHTML = "<p>Process</p>";
-			// var fieldData = '<table id="process-table" data-page-length="10"><thead><tr><th>Process Name</th><th>Field Name</th><th>Propogate Customer</th><th>CRM URL</th></tr></thead><tbody>';
-			// var tableData = "";
-			// var length = Object.keys(JSON.parse(data).data).length;
-			// data = JSON.parse(data);
-			// console.log(length);
-			// for(var i =0; i<length; i++){
-			// 	tableData = tableData+'<tr><td>'+data.data[i].name+'</td><td>'+data.data[i].field_name+'</td><td>'+data.data[i].propagate_customer+'</td><td>'+data.data[i].crm_url+'</td></tr>';
-			// }
-
-			// tableData = tableData+'</tbody></table>';
-			// fieldData = fieldData + tableData;
-			// document.getElementById('content').innerHTML = fieldData;
-			// setProcessTable();
 			
 			var length = Object.keys(JSON.parse(data).data).length;
 			data = JSON.parse(data);
-			console.log(length);
-			var processData = '<br /><br />';
+			var processData = '<span id="alert_box"></span><br /><br />';
 			var ddData = '';
 			for(var i=0; i< length;i++){
-			processData = processData+'<p><button class="btn btn-primary" type="button" data-bs-toggle="collapse"'+i+' data-bs-target="#collapse'+i+'" aria-expanded="false" aria-controls="collapseExample">'+data.data[i].name+'</button></p><div class="collapse" id="collapse'+i+'"><div class="card card-body">'+data.data[i]+'</div></div><br />';
+				if(data.data[i].propagate_customer == 1){
+					processData = processData+'<p><button class="btn btn-primary" type="button" data-bs-toggle="collapse"'+i+' data-bs-target="#collapse'+i+'" aria-expanded="false" aria-controls="collapseExample">'+data.data[i].name+'</button></p><div class="collapse" id="collapse'+i+'"><div class="card card-body"><span>Process ID : '+data.data[i].id+' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<button type="button" class="btn btn-primary" onclick="createCampaign()">Create Campaign</button></span><br /><br />CRM Setup URL <input type="text" id="setup'+data.data[i].id+'" value="'+data.data[i].crm_url+'"/><br /><div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="flexCheckProcess'+data.data[i].id+'" checked> <label class="form-check-label" for="flexCheckDefault">Propogate Customer </label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Data Field <i>'+data.data[i].field_name+'</i></div><br />'+'<div id="campaign_data'+data.data[i].id+'"></div>';
+				}else{
+					processData = processData+'<p><button class="btn btn-primary" type="button" data-bs-toggle="collapse"'+i+' data-bs-target="#collapse'+i+'" aria-expanded="false" aria-controls="collapseExample">'+data.data[i].name+'</button></p><div class="collapse" id="collapse'+i+'"><div class="card card-body"><span>Process ID : '+data.data[i].id+'&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <button type="button" class="btn btn-primary" onclick="createCampaign()">Create Campaign</button></span><br /><br />CRM Setup URL <input type="text" id="setup'+data.data[i].id+'" value="'+data.data[i].crm_url+'"/><br /><div class="form-check"> <input class="form-check-input" type="checkbox" value="" id="flexCheckProcess'+data.data[i].id+'" > <label class="form-check-label" for="flexCheckDefault">Propogate Customer </label>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Data Field <i>'+data.data[i].field_name+'</i></div><br />'+'<div id="campaign_data'+data.data[i].id+'"></div>';
+				}
+				processData = processData+'</div></div><br />';
 			}
 			document.getElementById('content').innerHTML = processData;
-
+			for(j=0;j<length;j++){
+				getCampaigns(data.data[j].id);
+			}
 		}
 		
 		function showMediaProfileData(data){
-			document.getElementById('content').innerHTML = "<p>Media Profile</p>";
+			document.getElementById('content').innerHTML = "<span id='alert_box'></span><p>Media Profile</p>";
 		}
 
 		function showFieldsData(data){
-			var fieldData = '<table id="field-table" data-page-length="10"><thead><tr><th>Field Name</th><th>Field</th></tr></thead><tbody>';
+			var fieldData = '<span id="alert_box"></span><table id="field-table" data-page-length="10"><thead><tr><th>Field Name</th><th>Field</th></tr></thead><tbody>';
 			var tableData = "";
 			var length = Object.keys(JSON.parse(data).data).length;
 			data = JSON.parse(data);
@@ -95,7 +126,7 @@ var userDataGlobal = '';
 		}
 
 		function showAppConfigData(data){
-			document.getElementById('content').innerHTML = "<p>App Configuration</p>";
+			document.getElementById('content').innerHTML = "<span id='alert_box'></span><p>App Configuration</p>";
 		}
 
 

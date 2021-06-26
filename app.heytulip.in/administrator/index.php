@@ -34,6 +34,7 @@
 
 	<!-- Page content -->
 	<div class="content" id="content">
+		<span id='alert_box'></span>
 		<div id="field_main"></div>
 		<div></div>
 		<div></div>
