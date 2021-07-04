@@ -2,6 +2,7 @@ var userDataGlobal = '';
 var campaignUserGlobal = [];
 var userCampaignToAssign = [];
 var userCampaignToRemove = [];
+var campaignAvailGlobal  = [];
 		function setFieldTable(){
 			$(function(){
 				$("#field-table").dataTable({
@@ -25,7 +26,6 @@ var userCampaignToRemove = [];
 					var decrypted = CryptoJS.AES.decrypt(data, userId);
 					decrypted = decrypted.toString(CryptoJS.enc.Utf8);
 					var userData = JSON.parse(decrypted);
-					console.log(userData);
 					userDataGlobal = userData;
 					showProcess();
 				}catch(e){
@@ -58,11 +58,9 @@ var userCampaignToRemove = [];
 
 		
 		function assignUser(campaignId){
+			var tag = "availableUser"+campaignId;
 			var tc_id = userDataGlobal.tcId;
-		}
-		function removeUser(campaignId){
-			var tag = "assignedUser"+campaignId;
-			var userData = campaignUserGlobal;
+			var userData = campaignAvailGlobal;
 			if(userData){
 				for(var i=0; i < userData.length;i++){
 					var userCampaign = userData[i].substring(userData[i].lastIndexOf("_")+1, userData[i].length);
@@ -71,6 +69,47 @@ var userCampaignToRemove = [];
 						var checkBoxCheck = document.getElementById(tag2).checked;
 						if(checkBoxCheck){
 							document.getElementById(userData[i]).style.display = 'none';
+							var userId = userData[i].substring(0,userData[i].lastIndexOf("_"));
+							var requestOptions = {
+							  method: 'GET',
+							  redirect: 'follow'
+							};
+
+							fetch("http://api.heytulip.in/tuliprestapi/app/assignUserToCampaign/?user_id="+userId+"&campaign_id="+campaignId+"&tc_id="+tc_id, requestOptions)
+							  .then(response => response.json())
+							  .then(result => {
+							  		getCampaignUser(campaignId);
+							  })
+							  .catch(error => console.log('error', error));
+						}
+					}
+				}
+			}
+		}
+		function removeUser(campaignId){
+			var tag = "assignedUser"+campaignId;
+			var userData = campaignUserGlobal;
+			var tc_id = userDataGlobal.tcId;
+			if(userData){
+				for(var i=0; i < userData.length;i++){
+					var userCampaign = userData[i].substring(userData[i].lastIndexOf("_")+1, userData[i].length);
+					if(userCampaign == campaignId){
+						var tag2 = userData[i]+'_checkbox';
+						var checkBoxCheck = document.getElementById(tag2).checked;
+						if(checkBoxCheck){
+							document.getElementById(userData[i]).style.display = 'none';
+							var userId = userData[i].substring(0,userData[i].lastIndexOf("_"));
+							var requestOptions = {
+							  method: 'GET',
+							  redirect: 'follow'
+							};
+
+							fetch("http://api.heytulip.in/tuliprestapi/app/removeUserFromCampaign/?user_id="+userId+"&campaign_id="+campaignId+"&tc_id="+tc_id, requestOptions)
+							  .then(response => response.json())
+							  .then(result => {
+							  		getCampaignUser(campaignId);
+							  })
+							  .catch(error => console.log('error', error));
 						}
 					}
 				}
@@ -81,8 +120,8 @@ var userCampaignToRemove = [];
 		/////////////////////////////////////////////////////////////////////
 
 			function filterAvailableUser(campaignId) {
-			  var tag = "myInput"+campaignId;
-			  var myTableTag = "myTable"+campaignId;
+			  var tag = "campaignAvailUser"+campaignId;
+			  var myTableTag = "availableUser"+campaignId;
 			  var input,filter, table, tr, td, i, txtValue;
 			  input = document.getElementById(tag);
 			  filter = input.value.toUpperCase();
@@ -128,6 +167,36 @@ var userCampaignToRemove = [];
 
 
 		   /////////////////////////////////////////////
+		function getAvailableUser(campaignId){
+			var tc_id = userDataGlobal.tcId;
+			var requestOptions = {
+			  method: 'GET',
+			  redirect: 'follow'
+			};
+
+			fetch("http://api.heytulip.in/tuliprestapi/app/getAvailableUserByCampaign/?campaign_id="+campaignId+"&tc_id="+tc_id, requestOptions)
+			  .then(response => response.json())
+			  .then(result => {
+			  		var tag = 'availableTable'+campaignId;
+			  	console.log('Avail User'+campaignId+ JSON.stringify(result.data))
+				  	var usersHTML = '';
+				  	if(result.data){
+						var userAvailData = '<input type="text" id="campaignAvailUser'+campaignId+'" onkeyup="filterAvailableUser('+campaignId+')" ><button style="float:right;" onclick="assignUser('+campaignId+')"> > </button> <span style="font-size: 20px;padding-left:90px;">Available Users</span> <table id="availableUser'+campaignId+'"> <tr class="header"> <th style="width:60%;"><input type="checkbox"></th> <th style="width:40%;">User ID</th> </tr>';
+
+						for(var userLoop=0; userLoop < result.data.length; userLoop++){
+							campaignAvailGlobal.push(result.data[userLoop].user_id+'_'+campaignId);
+							usersHTML = usersHTML+'<tr id="'+result.data[userLoop].user_id+'_'+campaignId+'"><td><input type="checkbox"  id="'+result.data[userLoop].user_id+'_'+campaignId+'_checkbox" value="'+result.data[userLoop].user_id+'" /></td><td>'+result.data[userLoop].user_id+'</td></tr>';
+						}
+						userAvailData = userAvailData+usersHTML+'</table>';
+					}else{
+						var userAvailData = 'No User Available';				
+
+					}
+					document.getElementById(tag).innerHTML=userAvailData;
+			  })
+			  .catch(error => console.log('error', error));
+		}
+
 		function getCampaignUser(campaignId){
 			var tc_id = userDataGlobal.tcId;
 			var requestOptions = {
@@ -138,19 +207,27 @@ var userCampaignToRemove = [];
 			fetch("http://api.heytulip.in/tuliprestapi/app/getUserByCampaign/?campaign_id="+campaignId+"&tc_id="+tc_id, requestOptions)
 			  .then(response => response.json())
 				  .then(result => {
+				  	var noUserFound = '';
+				  	var tag = 'campaign_user'+campaignId;
+				  	var usersHTML = '';
 				  	if(result.data){
-				  		console.log(result);
-				  		var tag = 'campaign_user'+campaignId;
-						var userAllData = '<div id="availableTable" style="width:48%;float:left;"><input type="text" id="myInput'+campaignId+'" onkeyup="filterAvailableUser('+campaignId+')" > <span style="font-size: 20px;padding-left:90px;">Available Users</span> <button style="float:right;" onclick="assignUser('+campaignId+')"> > </button> <table id="myTable'+campaignId+'"> <tr class="header"> <th style="width:60%;"><input type="checkbox"></th> <th style="width:40%;">User ID</th> </tr> <tr> <td><input type="checkbox" /></td> <td>Germany</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Sweden</td> </tr> <tr> <td><input type="checkbox" /></td> <td>UK</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Germany</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Canada</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Italy</td> </tr> </table> </div>';
+
+						var userAllData = '<div id="availableTable'+campaignId+'" style="width:48%;float:left;"></div>';
 						var userAssignedData = '<div id="assignedTable" style="width:48%;float:right;"> <button onclick="removeUser('+campaignId+')"> < </button><input  style="float:right;" type="text" id="campaignUser'+campaignId+'" onkeyup="filterAssignedUser('+campaignId+')" > <span style="font-size: 20px;padding-left:90px;">Assigned Users</span> <table id="assignedUser'+campaignId+'"> <tr class="header"> <th style="width:60%;"><input type="checkbox"></th> <th style="width:40%;">User ID</th> </tr>';
-						var usersHTML = '';
+
 						for(var userLoop=0; userLoop < result.data.length; userLoop++){
 							campaignUserGlobal.push(result.data[userLoop].user_id+'_'+campaignId);
 							usersHTML = usersHTML+'<tr id="'+result.data[userLoop].user_id+'_'+campaignId+'"><td><input type="checkbox"  id="'+result.data[userLoop].user_id+'_'+campaignId+'_checkbox" value="'+result.data[userLoop].user_id+'" /></td><td>'+result.data[userLoop].user_id+'</td></tr>';
 						}
 						userAssignedData = userAssignedData+usersHTML+'</table> </div>';
-						document.getElementById(tag).innerHTML=userAllData+userAssignedData;
+					}else{
+						var userAllData = '<div id="availableTable'+campaignId+'" style="width:48%;float:left;">No User Available</div>';
+						var userAssignedData = '<div id="assignedTable" style="width:48%;float:right;">No User Available</div>';
+						userAssignedData = userAssignedData+usersHTML;					
+
 					}
+					document.getElementById(tag).innerHTML='<div id="userTable">'+userAllData+userAssignedData+'</div>';
+					getAvailableUser(campaignId);
 			  })
 			  .catch(error => console.log('error', error));
 			
@@ -166,10 +243,10 @@ var userCampaignToRemove = [];
 			  .then(response => response.json())
 			  .then(result => {
 			  	if(result.status != 'no_data'){
-			  	 	console.log(result.data);
-			  	 	var campaignData = '<div class="accordion accordion-flush" id="accordionMain">';
+			  	 	console.log('Campaign Data '+result.data.length);
+			  	 	var campaignData = '<div class="accordion accordion-flush" id="accordionMain'+process_id+'">';
 			  	 	for(var i=0;i<result.data.length;i++){
-			  	 		campaignData = campaignData+'<div class="accordion-item"> <h2 class="accordion-header" id="heading'+i+'"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCampaign'+i+'" aria-expanded="true" aria-controls="collapseCampaign'+i+'"><br /><i>'+result.data[i].name+'</i> </button> </h2> <div id="collapseCampaign'+i+'" class="accordion-collapse collapse" aria-labelledby="heading"'+i+' data-bs-parent="#accordionMain"><br /><div class="accordion-body"><b>Campaign ID</b>  '+result.data[i].id+' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Type</b> <i>'+result.data[i].type+'</i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<b>Theme ID </b>'+result.data[i].theme_id+'<br /><br />History URL <input type="text" id="preview'+result.data[i].id+'" value="'+result.data[i].preview_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer URL <input type="text" id="customer'+result.data[i].id+'"  value="'+result.data[i].customer_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Dispose URL <input type="text" id="dispose'+result.data[i].id+'" value="'+result.data[i].dispose_url+'"/> <br /><br /><p> <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUser'+result.data[i].id+'" aria-expanded="false" aria-controls="collapseUser'+result.data[i].id+'"> &nbsp;&nbsp;Users&nbsp;&nbsp; </button> </p> <div class="collapse" id="collapseUser'+result.data[i].id+'"> <div class="card card-body"><span id="campaign_user'+result.data[i].id+'"></span></div> </div><br /><button type="button" class="btn btn-primary" onclick="updateData('+result.data[i].id+','+processId+')">Update</button></div> </div> </div>';
+			  	 		campaignData = campaignData+'<div class="accordion-item"> <h2 class="accordion-header" id="heading'+i+'"> <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseCampaign'+i+'_'+process_id+'" aria-expanded="true" aria-controls="collapseCampaign'+i+'_'+process_id+'"><br /><i>'+result.data[i].name+'</i> </button> </h2> <div id="collapseCampaign'+i+'_'+process_id+'" class="accordion-collapse collapse" aria-labelledby="heading'+i+'" data-bs-parent="#accordionMain'+process_id+'"><br /><div class="accordion-body"><b>Campaign ID</b>  '+result.data[i].id+' &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b>Type</b> <i>'+result.data[i].type+'</i> &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp<b>Theme ID </b>'+result.data[i].theme_id+'<br /><br />History URL <input type="text" id="preview'+result.data[i].id+'" value="'+result.data[i].preview_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Customer URL <input type="text" id="customer'+result.data[i].id+'"  value="'+result.data[i].customer_url+'"/>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; Dispose URL <input type="text" id="dispose'+result.data[i].id+'" value="'+result.data[i].dispose_url+'"/> <br /><br /><p> <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseUser'+result.data[i].id+'" aria-expanded="false" aria-controls="collapseUser'+result.data[i].id+'"> &nbsp;&nbsp;Users&nbsp;&nbsp; </button> </p> <div class="collapse" id="collapseUser'+result.data[i].id+'"> <div class="card card-body"><span id="campaign_user'+result.data[i].id+'"></span></div> </div><br /><button type="button" class="btn btn-primary" onclick="updateData('+result.data[i].id+','+processId+')">Update</button></div> </div> </div>';
 			  	 	}
 			  	 	campaignData = campaignData + ' </div>';
 
@@ -219,7 +296,6 @@ var userCampaignToRemove = [];
 			var tableData = "";
 			var length = Object.keys(JSON.parse(data).data).length;
 			data = JSON.parse(data);
-			console.log(length);
 			for(var i =0; i<length; i++){
 				tableData = tableData+'<tr><td>'+data.data[i].name+'</td><td>'+JSON.stringify(data.data[i].field_json)+'</td></tr>';
 			}
@@ -253,7 +329,6 @@ var userCampaignToRemove = [];
 			fetch("http://api.heytulip.in/tuliprestapi/app/getProcess/?tc_id="+userDataGlobal.tcId, requestOptions)
 			  .then(response => response.text())
 			  .then(result => {
-			  	console.log(result);
 			  	showProcessData(result);
 			  })
 			  .catch(error => console.log('error', error));
@@ -264,7 +339,6 @@ var userCampaignToRemove = [];
 			showMediaProfileData(data);
 		}
 		function getFieldsData(){
-			// console.log();
 			var requestOptions = {
 			  method: 'GET',
 			  redirect: 'follow'
@@ -273,7 +347,6 @@ var userCampaignToRemove = [];
 			fetch("http://api.heytulip.in/tuliprestapi/app/getField/?tc_id="+userDataGlobal.tcId, requestOptions)
 			  .then(response => response.text())
 			  .then(result => {
-			  	console.log(result);
 				showFieldsData(result);
 			  })
 			  .catch(error => console.log('error', error));

@@ -58,7 +58,7 @@ div.content {
 * {
   box-sizing: border-box;
 }
-#availableTable input[type=text]{
+#userTable input[type=text]{
   background-image: url('../css/searchicon.png');
   background-position: 10px 10px;
   background-repeat: no-repeat;
@@ -69,29 +69,25 @@ div.content {
   margin-bottom: 12px;
 }
 
-#availableTable table {
+#userTable table {
   border-collapse: collapse;
   width: 100%;
   border: 1px solid #ddd;
   font-size: 18px;
 }
 
-#availableTable th, #availableTable td {
+#userTable th, #userTable td {
   text-align: left;
   padding: 12px;
 }
 
-#availableTable tr {
+#userTable tr {
   border-bottom: 1px solid #ddd;
 }
 
-#availableTable tr.header, #availableTable tr:hover {
+#userTable tr.header, #userTable tr:hover {
   background-color: #f1f1f1;
 }
-#availableUser {
-  width: 30%;
-}
-
 
 
 
