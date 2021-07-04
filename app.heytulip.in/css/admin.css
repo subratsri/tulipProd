@@ -54,3 +54,74 @@ div.content {
     float: none;
   }
 }
+
+* {
+  box-sizing: border-box;
+}
+#availableTable input[type=text]{
+  background-image: url('../css/searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 30%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#availableTable table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-size: 18px;
+}
+
+#availableTable th, #availableTable td {
+  text-align: left;
+  padding: 12px;
+}
+
+#availableTable tr {
+  border-bottom: 1px solid #ddd;
+}
+
+#availableTable tr.header, #availableTable tr:hover {
+  background-color: #f1f1f1;
+}
+#availableUser {
+  width: 30%;
+}
+
+
+
+
+#assignedTable input[type=text]{
+  background-image: url('../css/searchicon.png');
+  background-position: 10px 10px;
+  background-repeat: no-repeat;
+  width: 30%;
+  font-size: 16px;
+  padding: 12px 20px 12px 40px;
+  border: 1px solid #ddd;
+  margin-bottom: 12px;
+}
+
+#assignedTable table {
+  border-collapse: collapse;
+  width: 100%;
+  border: 1px solid #ddd;
+  font-size: 18px;
+}
+
+#assignedTable th, #assignedTable td {
+  text-align: left;
+  padding: 12px;
+}
+
+#assignedTable tr {
+  border-bottom: 1px solid #ddd;
+}
+
+#assignedTable tr.header, #assignedTable tr:hover {
+  background-color: #f1f1f1;
+}

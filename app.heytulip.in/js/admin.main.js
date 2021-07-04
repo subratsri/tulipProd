@@ -1,4 +1,7 @@
 var userDataGlobal = '';
+var campaignUserGlobal = [];
+var userCampaignToAssign = [];
+var userCampaignToRemove = [];
 		function setFieldTable(){
 			$(function(){
 				$("#field-table").dataTable({
@@ -52,236 +55,105 @@ var userDataGlobal = '';
 			  })
 			  .catch(error => console.log('error', error));
 		}
-		function addUserAssignedTable(campaignId){
-			var tag = '#exampleAssigned'+campaignId;
-			var data = [ [ "1", "Tiger Nixon", "System Architect", "Edinburgh", "5421", "2011/04/25", "$320,800" ], [ "2", "Garrett Winters", "Accountant", "Tokyo", "8422", "2011/07/25", "$170,750" ]];
-			var table = $(tag).DataTable({
-		      'data': data,
-		      'columnDefs': [{
-		         'targets': 0,
-		         'searchable': false,
-		         'orderable': false,
-		         'className': 'dt-body-center',
-		         'render': function (data, type, full, meta){
-		             return '<input type="checkbox" name="id[]" value="' + $('<div/>').text(data).html() + '">';
-		         }
-		      }],
-		      'order': [[1, 'asc']]
-		   });
 
-		   // Handle click on "Select all" control
-		   $(tag+'-select-all').on('click', function(){
-		      // Get all rows with search applied
-		      var rows = table.rows({ 'search': 'applied' }).nodes();
-		      // Check/uncheck checkboxes for all rows in the table
-		      $('input[type="checkbox"]', rows).prop('checked', this.checked);
-		   });
-
-		   // Handle click on checkbox to set state of "Select all" control
-		   $(tag+' tbody').on('change', 'input[type="checkbox"]', function(){
-		      // If checkbox is not checked
-		      if(!this.checked){
-		         var el = $('#exampleAssigned-select-all').get(0);
-		         // If "Select all" control is checked and has 'indeterminate' property
-		         if(el && el.checked && ('indeterminate' in el)){
-		            // Set visual state of "Select all" control
-		            // as 'indeterminate'
-		            el.indeterminate = true;
-		         }
-		      }
-		   });
-
-		   // Handle form submission event
-		   $('#frm-exampleAssigned'+campaignId).on('submit', function(e){
-		      var form = this;
-
-		      // Iterate over all checkboxes in the table
-		      table.$('input[type="checkbox"]').each(function(){
-		         // If checkbox doesn't exist in DOM
-		         if(!$.contains(document, this)){
-		            // If checkbox is checked
-		            if(this.checked){
-		               // Create a hidden element
-		               $(form).append(
-		                  $('<input>')
-		                     .attr('type', 'hidden')
-		                     .attr('name', this.name)
-		                     .val(this.value)
-		               );
-		            }
-		         }
-		      });
-		   });
-		}
-		function updateDataTableSelectAllCtrl(table){
-		   var $table             = table.table().node();
-		   var $chkbox_all        = $('tbody input[type="checkbox"]', $table);
-		   var $chkbox_checked    = $('tbody input[type="checkbox"]:checked', $table);
-		   var chkbox_select_all  = $('thead input[name="select_all"]', $table).get(0);
-
-		   // If none of the checkboxes are checked
-		   if($chkbox_checked.length === 0){
-		      chkbox_select_all.checked = false;
-		      if('indeterminate' in chkbox_select_all){
-		         chkbox_select_all.indeterminate = false;
-		      }
-
-		   // If all of the checkboxes are checked
-		   } else if ($chkbox_checked.length === $chkbox_all.length){
-		      chkbox_select_all.checked = true;
-		      if('indeterminate' in chkbox_select_all){
-		         chkbox_select_all.indeterminate = false;
-		      }
-
-		   // If some of the checkboxes are checked
-		   } else {
-		      chkbox_select_all.checked = true;
-		      if('indeterminate' in chkbox_select_all){
-		         chkbox_select_all.indeterminate = true;
-		      }
-		   }
-		}
-		function addUserTable(campaignId){
-			addUserAssignedTable(campaignId);
-			var rows_selected = [];
-			var data = [ [ "1", "Tiger Nixon", "System Architect", "Edinburgh", "5421", "2011/04/25", "$320,800" ], [ "2", "Garrett Winters", "Accountant", "Tokyo", "8422", "2011/07/25", "$170,750" ]];
-			var tag = '#example'+campaignId;
-			var tag2 = 'example'+campaignId;
-			var table = $(tag).DataTable({
-		      'data': data,
-		      'columnDefs': [{
-		         'targets': 0,
-		         'searchable': false,
-		         'orderable': false,
-		         'className': 'dt-body-center',
-		         'render': function (data, type, full, meta){
-		             return '<input type="checkbox">';
-		         }
-		      }],
-		      'order': [[1, 'asc']],
-		      'rowCallback': function(row, data, dataIndex){
-		         // Get row ID
-		         var rowId = data[0];
-
-		         // If row ID is in the list of selected row IDs
-		         if($.inArray(rowId, rows_selected) !== -1){
-		            $(row).find('input[type="checkbox"]').prop('checked', true);
-		            $(row).addClass('selected');
-		         }
-		      }
-		   });
-			 // Handle click on checkbox
-		   $(tag+' tbody').on('click', 'input[type="checkbox"]', function(e){
-		      var $row = $(this).closest('tr');
-
-		      // Get row data
-		      var data = table.row($row).data();
-
-		      // Get row ID
-		      var rowId = data[0];
-
-		      // Determine whether row ID is in the list of selected row IDs 
-		      var index = $.inArray(rowId, rows_selected);
-
-		      // If checkbox is checked and row ID is not in list of selected row IDs
-		      if(this.checked && index === -1){
-		         rows_selected.push(rowId);
-
-		      // Otherwise, if checkbox is not checked and row ID is in list of selected row IDs
-		      } else if (!this.checked && index !== -1){
-		         rows_selected.splice(index, 1);
-		      }
-
-		      if(this.checked){
-		         $row.addClass('selected');
-		      } else {
-		         $row.removeClass('selected');
-		      }
-
-		      // Update state of "Select all" control
-		      updateDataTableSelectAllCtrl(table);
-
-		      // Prevent click event from propagating to parent
-		      e.stopPropagation();
-		   });
-
-		   // Handle click on table cells with checkboxes
-		   $(tag).on('click', 'tbody td, thead th:first-child', function(e){
-		      $(this).parent().find('input[type="checkbox"]').trigger('click');
-		   });
-
-		   // Handle click on "Select all" control
-		   $('thead input[name="select_all"]', table.table().container()).on('click', function(e){
-		      if(this.checked){
-		         $(tag+' tbody input[type="checkbox"]:not(:checked)').trigger('click');
-		      } else {
-		         $(tag+' tbody input[type="checkbox"]:checked').trigger('click');
-		      }
-
-		      // Prevent click event from propagating to parent
-		      e.stopPropagation();
-		   });
-
-		   // Handle table draw event
-		   table.on('draw', function(){
-		      // Update state of "Select all" control
-		      updateDataTableSelectAllCtrl(table);
-		   });
-		    
-		   // Handle form submission event 
-		   $('#frm-'+tag2).on('submit', function(e){
-		      var form = this;
-
-		      // Iterate over all selected checkboxes
-		      $.each(rows_selected, function(index, rowId){
-		         // Create a hidden element 
-		         $(form).append(
-		             $('<input>')
-		                .attr('type', 'hidden')
-		                .attr('name', 'id[]')
-		                .val(rowId)
-		         );
-		      });
-
-		      // FOR DEMONSTRATION ONLY     
-		      
-		      // Output form data to a console     
-		      $(tag2+'-console').text($(form).serialize());
-		      console.log("Form submission", $(form).serialize());
-		       
-		      // Remove added elements
-		      $('input[name="id\[\]"]', form).remove();
-		       
-		      // Prevent actual form submission
-		      e.preventDefault();
-		   });
-
-		   
-		}
+		
 		function assignUser(campaignId){
-			var tag ="#example"+campaignId;
-			var table = $(tag).DataTable();
- 
-			var rows = table
-			    .rows( '.selected' )
-			    .remove()
-			    .draw();
-
+			var tc_id = userDataGlobal.tcId;
+		}
+		function removeUser(campaignId){
+			var tag = "assignedUser"+campaignId;
+			var userData = campaignUserGlobal;
+			if(userData){
+				for(var i=0; i < userData.length;i++){
+					var userCampaign = userData[i].substring(userData[i].lastIndexOf("_")+1, userData[i].length);
+					if(userCampaign == campaignId){
+						var tag2 = userData[i]+'_checkbox';
+						var checkBoxCheck = document.getElementById(tag2).checked;
+						if(checkBoxCheck){
+							document.getElementById(userData[i]).style.display = 'none';
+						}
+					}
+				}
+			}
 		}
 
 
 		/////////////////////////////////////////////////////////////////////
 
+			function filterAvailableUser(campaignId) {
+			  var tag = "myInput"+campaignId;
+			  var myTableTag = "myTable"+campaignId;
+			  var input,filter, table, tr, td, i, txtValue;
+			  input = document.getElementById(tag);
+			  filter = input.value.toUpperCase();
+			  table = document.getElementById(myTableTag);
+			  tr = table.getElementsByTagName("tr");
+			  // alert(tr.length);
+			  for (i = 1; i < tr.length; i++) {
+			    td = tr[i].getElementsByTagName("td")[1];
+			 
+			    if (td) {
+			      txtValue = td.innerText;
+			      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			        tr[i].style.display = "";
+			      } else {
+			        tr[i].style.display = "none";
+			      }
+			    }       
+			  }
+			}
+
+			function filterAssignedUser(campaignId) {
+			  var tag = "campaignUser"+campaignId;
+			  var myTableTag = "assignedUser"+campaignId;
+			  var input,filter, table, tr, td, i, txtValue;
+			  input = document.getElementById(tag);
+			  filter = input.value.toUpperCase();
+			  table = document.getElementById(myTableTag);
+			  tr = table.getElementsByTagName("tr");
+			  // alert(tr.length);
+			  for (i = 1; i < tr.length; i++) {
+			    td = tr[i].getElementsByTagName("td")[1];
+			 
+			    if (td) {
+			      txtValue = td.innerText;
+			      if (txtValue.toUpperCase().indexOf(filter) > -1) {
+			        tr[i].style.display = "";
+			      } else {
+			        tr[i].style.display = "none";
+			      }
+			    }       
+			  }
+			}
 
 
 		   /////////////////////////////////////////////
 		function getCampaignUser(campaignId){
-			var tag = 'campaign_user'+campaignId;
-			var userAllData = '<div style="width:48%;float:left;"><h3>Available</h3><form id="frm-example'+campaignId+'" action="" method="GET"><button onclick="assignUser('+campaignId+')" style="float:right;"> > </button><br /><table id="example'+campaignId+'" class="display select" cellspacing="0" width="100%"> <thead> <tr> <th><input type="checkbox" name="select_all" value="1" id="example'+campaignId+'-select-all"></th> <th>ID</th> <th>Name</th> </tr> </thead></table></form></div>';
-			var userAssignedData = '<div style="width:48%;float:right;"><h3>Assigned</h3><button> < </button><br /><table id="exampleAssigned'+campaignId+'" class="display select" cellspacing="0" width="100%"> <thead> <tr> <th><input type="checkbox" name="select_all" value="2" id="exampleAssigned'+campaignId+'-select-all"></th> <th>ID</th> <th>Name</th> </tr> </thead></table></div>';
-			// var midbar = '<div ><button> > </button><br /><button> < </button></div>';
-			document.getElementById(tag).innerHTML=userAllData+userAssignedData;
-			addUserTable(campaignId);
+			var tc_id = userDataGlobal.tcId;
+			var requestOptions = {
+			  method: 'GET',
+			  redirect: 'follow'
+			};
+
+			fetch("http://api.heytulip.in/tuliprestapi/app/getUserByCampaign/?campaign_id="+campaignId+"&tc_id="+tc_id, requestOptions)
+			  .then(response => response.json())
+				  .then(result => {
+				  	if(result.data){
+				  		console.log(result);
+				  		var tag = 'campaign_user'+campaignId;
+						var userAllData = '<div id="availableTable" style="width:48%;float:left;"><input type="text" id="myInput'+campaignId+'" onkeyup="filterAvailableUser('+campaignId+')" > <span style="font-size: 20px;padding-left:90px;">Available Users</span> <button style="float:right;" onclick="assignUser('+campaignId+')"> > </button> <table id="myTable'+campaignId+'"> <tr class="header"> <th style="width:60%;"><input type="checkbox"></th> <th style="width:40%;">User ID</th> </tr> <tr> <td><input type="checkbox" /></td> <td>Germany</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Sweden</td> </tr> <tr> <td><input type="checkbox" /></td> <td>UK</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Germany</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Canada</td> </tr> <tr> <td><input type="checkbox" /></td> <td>Italy</td> </tr> </table> </div>';
+						var userAssignedData = '<div id="assignedTable" style="width:48%;float:right;"> <button onclick="removeUser('+campaignId+')"> < </button><input  style="float:right;" type="text" id="campaignUser'+campaignId+'" onkeyup="filterAssignedUser('+campaignId+')" > <span style="font-size: 20px;padding-left:90px;">Assigned Users</span> <table id="assignedUser'+campaignId+'"> <tr class="header"> <th style="width:60%;"><input type="checkbox"></th> <th style="width:40%;">User ID</th> </tr>';
+						var usersHTML = '';
+						for(var userLoop=0; userLoop < result.data.length; userLoop++){
+							campaignUserGlobal.push(result.data[userLoop].user_id+'_'+campaignId);
+							usersHTML = usersHTML+'<tr id="'+result.data[userLoop].user_id+'_'+campaignId+'"><td><input type="checkbox"  id="'+result.data[userLoop].user_id+'_'+campaignId+'_checkbox" value="'+result.data[userLoop].user_id+'" /></td><td>'+result.data[userLoop].user_id+'</td></tr>';
+						}
+						userAssignedData = userAssignedData+usersHTML+'</table> </div>';
+						document.getElementById(tag).innerHTML=userAllData+userAssignedData;
+					}
+			  })
+			  .catch(error => console.log('error', error));
+			
 		}
 		function getCampaigns(process_id){
 			var processId = parseInt(process_id);
