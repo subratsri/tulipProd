@@ -4,7 +4,7 @@ function doLogin(){
 
 	var password = document.getElementById('floatingPassword').value;
 	var emailid = document.getElementById('floatingEmail').value;
-
+	// alert(emailid);
 	if(password && emailid){
 		loadingAnim.style.display = "block";
 		var settings = {
@@ -22,8 +22,10 @@ function doLogin(){
 
 		try{
 			$.ajax(settings).done(function (response) {
+				// alert(JSON.stringify(response));
 		  	loadingAnim.style.display = "none";
 			  	if(response != 0){
+			  		response = JSON.stringify(response);
 			  	  	var encrypted = CryptoJS.AES.encrypt(response, emailid);
 			  	  	encrypted = encodeURIComponent(encrypted);
 			  	  	// alert(encrypted);
