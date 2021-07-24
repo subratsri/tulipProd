@@ -20,7 +20,8 @@
 	<!-- The sidebar -->
 	<div class="sidebar" id="sidebar">
 		<h3>HeyTulip</h3>
-		<a class="active">Campaign</a>
+		<a class="active">Select Campaign</a>
+		<span id='campaignbar'></span>
 		<a >Custom App 1</a>
 		<a >Custom App 2</a>
 		<a onclick="doLogout()">Logout</a>
