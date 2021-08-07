@@ -368,29 +368,29 @@ var campaignAvailGlobal  = [];
 
 		//Fucntion for handling NAV -> Fucntions to be dynamically added for custom tab
 		function showProcess(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a class="active">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a class="active">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
 
 			getProcessData();
 		}
 		function showMediaProfile(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a class="active">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a class="active">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
 			getMediaProfileData();
 		}
 		function showFields(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a class="active">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a> <div id="field_main"></div>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a class="active">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a> <div id="field_main"></div>';
 			
 			getFieldsData();
 		}
 		function showAppConfig(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a class="active">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a class="active">App Configuration</a> <a onclick="showEvent()">Events</a><a onclick="showUsers()">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
 			getAppConfigData();
 		}
 		function showEvent(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a class="active">Events</a><a onclick="showUsers()">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a class="active">Events</a><a onclick="showUsers()">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
 			getEventData();
 		}
 		function showUsers(){
-			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a> <a class="active">Users</a> <a >Custom App 1</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
+			document.getElementById('sidebar').innerHTML = '<h3>HeyTulip</h3> <a onclick="showProcess()">Process</a> <a onclick="showMediaProfile()">Media Profile</a> <a onclick="showFields()">Fields</a> <a onclick="showAppConfig()">App Configuration</a> <a onclick="showEvent()">Events</a> <a class="active">Users</a> <a >Ticket Status</a> <a >Custom App 2</a> <a >Custom App 3</a> <a >Custom App 4</a> <a onclick="doLogout()">Logout</a>';
 			getUsersData();
 		}
 		
